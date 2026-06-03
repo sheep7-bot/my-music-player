@@ -52,28 +52,13 @@ canvas#bg-ink{
 }
 
 /* ============================
-   羊羽 Ghost Watermark (歸藏 style)
+   羊羽的music Tiled Watermark
    ============================ */
-.ghost-watermark{
-  position:fixed;z-index:4;pointer-events:none;
-  font-family:var(--serif-zh);font-weight:900;
-  font-size:34vw;line-height:0.8;
-  letter-spacing:-0.02em;
-  opacity:0.06;color:var(--ink);
-  top:5%;right:2%;
-  transform:rotate(3deg);
-  mix-blend-mode:normal;
-  text-shadow:none;
-}
-.ghost-watermark-inv{
-  position:fixed;z-index:4;pointer-events:none;
-  font-family:var(--serif-zh);font-weight:900;
-  font-size:22vw;line-height:0.8;
-  letter-spacing:-0.02em;
-  opacity:0.04;color:var(--paper);
-  bottom:8%;left:-2%;
-  transform:rotate(-5deg);
-  mix-blend-mode:normal;
+.wm-layer{
+  position:fixed;inset:0;z-index:4;
+  pointer-events:none;
+  mix-blend-mode:difference;
+  opacity:0.12;
 }
 
 /* ============================
@@ -303,8 +288,7 @@ canvas#bg-ink{
   .controls{gap:16px}.bplay{width:42px;height:42px}.bp,.bn{width:28px;height:28px}
   .foot{padding:8px 16px 10px;font-size:8px}
   .rule-v,.mtag{display:none}
-  .ghost-watermark{font-size:20vw;opacity:0.03}
-  .ghost-watermark-inv{font-size:14vw;opacity:0.025}
+  .wm-layer{opacity:0.07;background-size:200px 200px!important}
 }
 @media(max-height:500px){
   .main{flex-direction:row;padding:40px 16px;gap:18px}
@@ -327,9 +311,8 @@ canvas#bg-ink{
   <div class="bg-noise"></div>
 </div>
 
-<!-- 羊羽 Ghost Watermarks (歸藏 ghost style) -->
-<div class="ghost-watermark">羊羽</div>
-<div class="ghost-watermark-inv">羊羽</div>
+<!-- 羊羽的music Tiled Watermark (via JS SVG pattern) -->
+<div class="wm-layer" id="wmLayer"></div>
 
 <!-- Magazine Rules & Tags -->
 <div class="rule-v l"></div>
@@ -523,6 +506,26 @@ document.addEventListener('touchstart',e=>{ty=e.touches[0].clientY},{passive:tru
 document.addEventListener('touchend',e=>{if(it)return;const dy=ty-e.changedTouches[0].clientY;if(Math.abs(dy)>50)dy>0?nx():pv()},{passive:true});
 document.addEventListener('keydown',e=>{switch(e.code){case'Space':e.preventDefault();tg();break;case'ArrowRight':case'ArrowDown':e.preventDefault();nx();break;case'ArrowLeft':case'ArrowUp':e.preventDefault();pv();break}if(e.shiftKey)switch(e.code){case'ArrowUp':e.preventDefault();au.volume=Math.min(1,au.volume+.1);break;case'ArrowDown':e.preventDefault();au.volume=Math.max(0,au.volume-.1);break}});
 pb.addEventListener('click',tg);document.getElementById('nextB').addEventListener('click',nx);document.getElementById('prevB').addEventListener('click',pv);
+
+// =====================================================================
+// Tiled Watermark — 羊羽的music (SVG pattern, diagonal)
+// =====================================================================
+(function(){
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="280" height="280">
+  <defs>
+    <pattern id="wm" patternUnits="userSpaceOnUse" width="280" height="280" patternTransform="rotate(-28)">
+      <text x="140" y="140" text-anchor="middle" dominant-baseline="central" font-family="serif" font-weight="600" font-size="18" fill="white">羊羽的music</text>
+      <text x="70" y="70" text-anchor="middle" dominant-baseline="central" font-family="serif" font-weight="500" font-size="13" fill="white" opacity="0.5">羊羽的music</text>
+      <text x="210" y="210" text-anchor="middle" dominant-baseline="central" font-family="serif" font-weight="500" font-size="13" fill="white" opacity="0.5">羊羽的music</text>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#wm)"/>
+</svg>`;
+  const el=document.getElementById('wmLayer');
+  el.style.backgroundImage=`url('data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}')`;
+  el.style.backgroundRepeat='repeat';
+  el.style.backgroundSize='280px 280px';
+})();
 
 // =====================================================================
 // Init
