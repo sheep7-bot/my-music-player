@@ -38,6 +38,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--mono);background:var(--i
 canvas#bg-ink{
   position:absolute;inset:0;width:100%;height:100%;
   display:block;opacity:1;z-index:1;
+  background:#0a0a0b;
 }
 /* Transition gradient along the diagonal */
 .bg-blend{
@@ -260,6 +261,11 @@ canvas#bg-ink{
    ============================ */
 .to{position:fixed;inset:0;z-index:200;pointer-events:none;background:var(--ink);opacity:0;transition:opacity 0.5s ease}
 .to.active{opacity:0.6}
+/* ============================
+   Preloader — 全黑遮罩，消除打开时的所有闪烁
+   ============================ */
+#preloader{position:fixed;inset:0;z-index:999;background:#0a0a0b;pointer-events:none;transition:opacity 0.6s ease}
+#preloader.hidden{opacity:0;pointer-events:none}
 
 /* ============================
    Responsive
@@ -288,6 +294,7 @@ canvas#bg-ink{
 </style>
 </head>
 <body>
+<div id="preloader"></div>
 
 <!-- ============================
      Split Background (黑白相间)
@@ -505,6 +512,11 @@ pb.addEventListener('click',tg);document.getElementById('nextB').addEventListene
 // =====================================================================
 rD();ld(0,true);
 for(let i=1;i<PL.length;i++){const img=new Image();img.src=PL[i].c}
+
+// =====================================================================
+// Hide preloader — 确保 WebGL+字体+首张封面就绪后再淡出
+// =====================================================================
+(function(){const pl=document.getElementById('preloader');let done=false;const hide=()=>{if(done)return;done=true;requestAnimationFrame(()=>{pl.classList.add('hidden');setTimeout(()=>{pl.style.display='none'},700)})};const onL=s=>()=>{if(s==='loaded'||s==='complete')hide()};if(document.readyState==='complete'){setTimeout(hide,200)}else{window.addEventListener('load',()=>setTimeout(hide,300))}setTimeout(hide,1500)})();
 </script>
 </body>
 </html>
