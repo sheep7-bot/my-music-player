@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>我的音乐收藏</title>
+<style>
+/* ==========================================================================
+   CSS Variables — Cold Premium Palette
+   ========================================================================== */
+:root {
+  --bg-deep: #080c18;
+  --bg-surface: #0d1525;
+  --bg-elevated: #121b2e;
+  --glass-bg: rgba(255,255,255,0.03);
+  --glass-border: rgba(255,255,255,0.06);
+  --glass-blur: 20px;
+  --text-primary: #e2ecf9;
+  --text-secondary: #8899bb;
+  --text-muted: #4a5a7a;
+  --accent: #64b5f6;
+  --accent-glow: rgba(100,181,246,0.15);
+  --accent-cyan: #4dd0e1;
+  --vinyl-base: #0f0f0f;
+  --shadow-deep: 0 30px 80px rgba(0,0,0,0.6);
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-full: 50%;
+  --font-sans: 'Inter','SF Pro Display','PingFang SC','Microsoft YaHei',system-ui,-apple-system,sans-serif;
+  --font-mono: 'SF Mono','Fira Code','Consolas',monospace;
+}
+
+/* ==========================================================================
+   Reset & Base
+   ========================================================================== */
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html,body {
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ==========================================================================
+   Background — Deep Space with Ambient Orbs
+   ========================================================================== */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.bg-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(30,60,120,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(20,80,100,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(40,30,80,0.2) 0%, transparent 50%),
+    linear-gradient(180deg, #080c18 0%, #0d1525 50%, #080c18 100%);
+}
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.12;
+  animation: orbFloat 25s ease-in-out infinite;
+  pointer-events: none;
+}
+.bg-orb:nth-child(2) {
+  width: 400px; height: 400px;
+  background: var(--accent);
+  top: -10%; left: -5%;
+  animation-delay: -5s;
+  animation-duration: 30s;
+}
+.bg-orb:nth-child(3) {
+  width: 300px; height: 300px;
+  background: var(--accent-cyan);
+  bottom: -5%; right: -5%;
+  animation-delay: -12s;
+  animation-duration: 20s;
+}
+.bg-orb:nth-child(4) {
+  width: 250px; height: 250px;
+  background: #7c4dff;
+  top: 40%; left: 50%;
+  animation-delay: -20s;
+  animation-duration: 35s;
+}
+@keyframes orbFloat {
+  0%,100% { transform: translate(0,0) scale(1); }
+  25% { transform: translate(60px,-40px) scale(1.1); }
+  50% { transform: translate(-30px,60px) scale(0.9); }
+  75% { transform: translate(40px,30px) scale(1.05); }
+}
+
+/* ==========================================================================
+   Ambient Grid (subtle)
+   ========================================================================== */
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at 50% 50%, black 30%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, black 30%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Noise Overlay
+   ========================================================================== */
+.bg-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  background: linear-gradient(180deg, rgba(8,12,24,0.9) 0%, transparent 100%);
+}
+.header-title {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+.header-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+}
+.header-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulseDot 2s ease-in-out infinite;
+}
+.header-dot.paused {
+  animation: none;
+  background: var(--text-muted);
+}
+@keyframes pulseDot {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* ==========================================================================
+   Main Layout
+   ========================================================================== */
+.main {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  padding: 80px 20px 160px;
+}
+
+/* ==========================================================================
+   Vinyl Player
+   ========================================================================== */
+.player-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(70vmin, 420px);
+  height: min(70vmin, 420px);
+  margin-bottom: 24px;
+}
+
+/* ---- Vinyl Container ---- */
+.vinyl {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  /* Outer shadow */
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04),
+    0 20px 80px rgba(0,0,0,0.6),
+    0 0 120px rgba(100,181,246,0.06);
+}
+
+/* ---- The rotating disc ---- */
+.vinyl-disc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  /* The actual vinyl texture is drawn on a canvas & set as background-image */
+  background-color: #0f0f0f;
+  /* Spin animation controlled via JS */
+  animation: spin 1.8s linear infinite;
+  animation-play-state: paused;
+}
+.vinyl-disc.playing {
+  animation-play-state: running;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ---- Album Art (center label) ---- */
+.album-art {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 36%;
+  height: 36%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  overflow: hidden;
+  background: #1a2332;
+  box-shadow:
+    inset 0 0 30px rgba(0,0,0,0.5),
+    0 0 20px rgba(0,0,0,0.3);
+  border: 2px solid rgba(255,255,255,0.06);
+}
+.album-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.4s ease;
+}
+/* Inner ring decoration around album art */
+.album-art::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.04);
+  pointer-events: none;
+}
+.album-art::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.2);
+  pointer-events: none;
+}
+
+/* ---- Spindle Hole ---- */
+.spindle {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 6%;
+  height: 6%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #666, #222);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+  z-index: 2;
+}
+.spindle::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 30%;
+  height: 30%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #111;
+}
+
+/* ---- Vinyl Sheen (fixed light reflection) ---- */
+.vinyl-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 35% 35%,
+      rgba(255,255,255,0.04) 0%,
+      rgba(255,255,255,0.01) 20%,
+      transparent 50%
+    );
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: overlay;
+}
+
+/* ---- Vinyl Edge Highlight ---- */
+.vinyl-edge {
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.03);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ==========================================================================
+   Tonearm
+   ========================================================================== */
+.tonearm {
+  position: absolute;
+  right: -12%;
+  top: -8%;
+  width: 46%;
+  height: 46%;
+  z-index: 20;
+  pointer-events: none;
+  transition: transform 0.8s cubic-bezier(0.34, 1.2, 0.64, 1);
+  transform-origin: 88% 12%;
+  transform: rotate(35deg);
+}
+.tonearm.playing {
+  transform: rotate(12deg);
+}
+
+.tonearm-base {
+  position: absolute;
+  right: -2px;
+  top: -2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #7788aa, #2a3050);
+  box-shadow:
+    0 2px 12px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+  z-index: 2;
+}
+.tonearm-base-inner {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 8px; height: 8px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #aabbcc, #445566);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.tonearm-arm {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 85%;
+  height: 3px;
+  background: linear-gradient(90deg,
+    rgba(200,210,230,0.1) 0%,
+    rgba(140,155,180,0.5) 30%,
+    rgba(100,115,140,0.7) 60%,
+    rgba(70,80,100,0.4) 100%
+  );
+  transform-origin: right center;
+  transform: rotate(-22deg) translateX(0);
+  border-radius: 2px;
+  box-shadow: 0 0 4px rgba(0,0,0,0.3);
+}
+.tonearm-arm::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: 14px;
+  height: 5px;
+  background: linear-gradient(180deg, #667788, #445566);
+  border-radius: 1px;
+  box-shadow: 0 0 3px rgba(0,0,0,0.4);
+}
+.tonearm-arm::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: -2px;
+  width: 6px;
+  height: 7px;
+  background: #556677;
+  border-radius: 1px;
+  transform: rotate(5deg);
+}
+
+.tonearm-shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 transparent;
+  transform-origin: 88% 12%;
+}
+
+/* ==========================================================================
+   Song Info
+   ========================================================================== */
+.song-info {
+  text-align: center;
+  margin-bottom: 28px;
+  transition: opacity 0.4s ease;
+}
+.song-info .track-number {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.song-info .track-title {
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+  transition: opacity 0.3s ease;
+}
+.song-info .track-artist {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* ==========================================================================
+   Progress
+   ========================================================================== */
+.progress-area {
+  width: min(80vmin, 480px);
+  margin-bottom: 20px;
+}
+.progress-bar {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 4px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: height 0.2s ease;
+}
+.progress-bar:hover {
+  height: 5px;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-cyan));
+  border-radius: 4px;
+  transition: width 0.2s linear;
+  position: relative;
+}
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translateY(-50%) scale(0);
+  transition: transform 0.2s ease;
+  box-shadow: 0 0 12px rgba(100,181,246,0.4);
+}
+.progress-bar:hover .progress-fill::after {
+  transform: translateY(-50%) scale(1);
+}
+.progress-time {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
+   Controls
+   ========================================================================== */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  margin-bottom: 32px;
+}
+.controls button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.25s ease;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.controls button:hover {
+  color: var(--text-primary);
+}
+.controls button:active {
+  transform: scale(0.92);
+}
+.btn-prev, .btn-next {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+}
+.btn-prev:hover, .btn-next:hover {
+  background: rgba(255,255,255,0.06);
+}
+.btn-play {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(100,181,246,0.15), rgba(77,208,225,0.15));
+  border: 1px solid rgba(100,181,246,0.2);
+  backdrop-filter: blur(10px);
+  position: relative;
+}
+.btn-play:hover {
+  background: linear-gradient(135deg, rgba(100,181,246,0.25), rgba(77,208,225,0.25));
+  border-color: rgba(100,181,246,0.3);
+  box-shadow: 0 0 30px rgba(100,181,246,0.1);
+}
+.btn-play-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%; height: 100%;
+}
+.btn-play-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: var(--text-primary);
+  transition: all 0.3s ease;
+}
+.btn-play-icon .pause-icon {
+  display: none;
+}
+.btn-play.playing .play-icon { display: none; }
+.btn-play.playing .pause-icon { display: block; }
+
+/* ==========================================================================
+   Playlist Indicator
+   ========================================================================== */
+.playlist-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.playlist-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  transition: all 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+  cursor: pointer;
+  position: relative;
+}
+.playlist-dot.active {
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(100,181,246,0.4);
+  width: 8px; height: 8px;
+}
+.playlist-dot:hover {
+  background: rgba(255,255,255,0.3);
+}
+.playlist-dot.active:hover {
+  background: var(--accent);
+}
+
+/* ==========================================================================
+   Scroll / Swipe Hint
+   ========================================================================== */
+.scroll-hint {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  opacity: 0.5;
+  animation: hintPulse 3s ease-in-out infinite;
+  pointer-events: none;
+}
+.scroll-hint svg {
+  width: 14px;
+  height: 14px;
+  fill: var(--text-muted);
+}
+@keyframes hintPulse {
+  0%,100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+/* ==========================================================================
+   Transition Overlay (for song changes)
+   ========================================================================== */
+.transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 30%, var(--bg-deep) 100%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.transition-overlay.active {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 480px) {
+  .header { padding: 16px 20px; }
+  .header-title { font-size: 12px; }
+  .header-indicator { font-size: 11px; }
+  .main { padding: 70px 16px 140px; }
+  .player-area {
+    width: min(76vmin, 320px);
+    height: min(76vmin, 320px);
+    margin-bottom: 18px;
+  }
+  .tonearm {
+    right: -14%;
+    top: -10%;
+    width: 50%;
+    height: 50%;
+  }
+  .tonearm-base {
+    width: 16px; height: 16px;
+    right: 0; top: 0;
+  }
+  .tonearm-base-inner {
+    width: 6px; height: 6px;
+  }
+  .song-info { margin-bottom: 20px; }
+  .song-info .track-number { font-size: 10px; }
+  .song-info .track-artist { font-size: 12px; }
+  .progress-area { width: min(88vmin, 360px); }
+  .controls { gap: 20px; }
+  .btn-play { width: 54px; height: 54px; }
+  .btn-prev, .btn-next { width: 38px; height: 38px; font-size: 14px; }
+  .btn-play-icon svg { width: 20px; height: 20px; }
+  .scroll-hint { display: none; }
+}
+
+/* ==========================================================================
+   Landscape Mobile
+   ========================================================================== */
+@media (max-height: 500px) {
+  .main {
+    flex-direction: row;
+    padding: 60px 20px;
+    gap: 24px;
+  }
+  .player-area {
+    width: min(50vh, 240px);
+    height: min(50vh, 240px);
+    margin-bottom: 0;
+  }
+  .song-info { margin-bottom: 0; text-align: left; }
+  .song-area { display: flex; flex-direction: column; gap: 12px; }
+  .progress-area { width: 100%; }
+}
+
+/* ==========================================================================
+   Accessibility
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .vinyl-disc,
+  .bg-orb,
+  .scroll-hint,
+  .header-dot {
+    animation: none !important;
+  }
+  .tonearm {
+    transition: none !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ======================================================================
+     Background
+     ====================================================================== -->
+<div class="bg">
+  <div class="bg-gradient"></div>
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-noise"></div>
+</div>
+
+<!-- ======================================================================
+     Transition Overlay
+     ====================================================================== -->
+<div class="transition-overlay" id="transitionOverlay"></div>
+
+<!-- ======================================================================
+     Header
+     ====================================================================== -->
+<header class="header">
+  <span class="header-title">✦ 我的音乐</span>
+  <div class="header-indicator">
+    <span class="header-dot paused" id="statusDot"></span>
+    <span id="statusText">已暂停</span>
+  </div>
+</header>
+
+<!-- ======================================================================
+     Main Player
+     ====================================================================== -->
+<main class="main">
+
+  <!-- Vinyl Player -->
+  <div class="player-area">
+    <div class="tonearm" id="tonearm">
+      <div class="tonearm-base">
+        <div class="tonearm-base-inner"></div>
+      </div>
+      <div class="tonearm-arm"></div>
+    </div>
+    <div class="vinyl" id="vinyl">
+      <div class="vinyl-disc" id="vinylDisc">
+        <div class="album-art">
+          <img id="albumCover" src="1.jpg" alt="Album Cover">
+        </div>
+        <div class="spindle"></div>
+      </div>
+      <div class="vinyl-sheen"></div>
+      <div class="vinyl-edge"></div>
+    </div>
+  </div>
+
+  <!-- Song Info -->
+  <div class="song-info" id="songInfo">
+    <div class="track-number" id="trackNumber">01 / 05</div>
+    <h1 class="track-title" id="trackTitle">曲目 1</h1>
+    <p class="track-artist" id="trackArtist">加载中...</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-area">
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-time">
+      <span id="currentTime">0:00</span>
+      <span id="totalTime">0:00</span>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn-prev" id="prevBtn" aria-label="上一首">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="19 20 9 12 19 4 19 20"/>
+        <line x1="5" y1="19" x2="5" y2="5"/>
+      </svg>
+    </button>
+    <button class="btn-play" id="playBtn" aria-label="播放/暂停">
+      <span class="btn-play-icon">
+        <svg class="play-icon" viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19" fill="currentColor"/></svg>
+        <svg class="pause-icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" fill="currentColor"/><rect x="14" y="4" width="4" height="16" fill="currentColor"/></svg>
+      </span>
+    </button>
+    <button class="btn-next" id="nextBtn" aria-label="下一首">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="5 4 15 12 5 20 5 4"/>
+        <line x1="19" y1="5" x2="19" y2="19"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Playlist Dots -->
+  <div class="playlist-indicator" id="playlistIndicator"></div>
+
+</main>
+
+<!-- ======================================================================
+     Scroll Hint
+     ====================================================================== -->
+<div class="scroll-hint" id="scrollHint">
+  <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 12v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="9" y1="22" x2="15" y2="22"/></svg>
+  <span>滚轮切换歌曲</span>
+</div>
+
+<!-- ======================================================================
+     Audio Element
+     ====================================================================== -->
+<audio id="audioPlayer" preload="metadata"></audio>
+
+<script>
+// =========================================================================
+// Configuration — Edit your playlist here!
+// =========================================================================
+const PLAYLIST = [
+  { title: '曲目 1', artist: '我的收藏', file: '1.mp3', cover: '1.jpg' },
+  { title: '曲目 2', artist: '我的收藏', file: '2.mp3', cover: '2.jpg' },
+  { title: '曲目 3', artist: '我的收藏', file: '3.mp3', cover: '3.jpg' },
+  { title: '曲目 4', artist: '我的收藏', file: '4.mp3', cover: '4.jpg' },
+  { title: '曲目 5', artist: '我的收藏', file: '5.mp3', cover: '5.jpg' },
+];
+
+// =========================================================================
+// State
+// =========================================================================
+let currentIndex = 0;
+let isPlaying = false;
+let isTransitioning = false;
+let touchStartY = 0;
+let touchStartX = 0;
+let lastScrollTime = 0;
+
+// =========================================================================
+// DOM Refs
+// =========================================================================
+const audio = document.getElementById('audioPlayer');
+const vinylDisc = document.getElementById('vinylDisc');
+const tonearm = document.getElementById('tonearm');
+const albumCover = document.getElementById('albumCover');
+const trackTitle = document.getElementById('trackTitle');
+const trackArtist = document.getElementById('trackArtist');
+const trackNumber = document.getElementById('trackNumber');
+const progressFill = document.getElementById('progressFill');
+const currentTimeEl = document.getElementById('currentTime');
+const totalTimeEl = document.getElementById('totalTime');
+const playBtn = document.getElementById('playBtn');
+const statusDot = document.getElementById('statusDot');
+const statusText = document.getElementById('statusText');
+const transitionOverlay = document.getElementById('transitionOverlay');
+const playlistIndicator = document.getElementById('playlistIndicator');
+const scrollHint = document.getElementById('scrollHint');
+
+// =========================================================================
+// Generate Vinyl Texture (Canvas → Background Image)
+// =========================================================================
+function generateVinylTexture(size) {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const cx = size / 2;
+  const cy = size / 2;
+  const radius = size / 2;
+
+  // Base gradient
+  const baseGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+  baseGrad.addColorStop(0, '#1a1a1a');
+  baseGrad.addColorStop(0.1, '#141414');
+  baseGrad.addColorStop(0.3, '#0f0f0f');
+  baseGrad.addColorStop(0.6, '#0a0a0a');
+  baseGrad.addColorStop(1, '#080808');
+  ctx.fillStyle = baseGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Draw grooves (concentric circles from edge to just outside label area)
+  const innerR = radius * 0.19;
+  const outerR = radius * 0.96;
+
+  // Pre-compute groove variations for visual richness
+  for (let r = outerR; r > innerR; r -= 0.8) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    const phase = ((r * 7) | 0) % 5;
+    const brightness = 0.008 + (phase / 5) * 0.03;
+    ctx.strokeStyle = `rgba(0,0,0,${brightness})`;
+    ctx.lineWidth = 0.35;
+    ctx.stroke();
+  }
+
+  // Extra dense groove bands
+  const bands = [
+    { from: 0.86, to: 0.89 },
+    { from: 0.73, to: 0.76 },
+    { from: 0.56, to: 0.59 },
+    { from: 0.36, to: 0.39 },
+  ];
+  bands.forEach(band => {
+    for (let r = radius * band.to; r > radius * band.from; r -= 0.4) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(0,0,0,0.025)`;
+      ctx.lineWidth = 0.2;
+      ctx.stroke();
+    }
+  });
+
+  // Subtle texture via pixel noise (only sample every 4th pixel)
+  const imageData = ctx.getImageData(0, 0, size, size);
+  const data = imageData.data;
+  const len = data.length;
+  for (let i = 0; i < len; i += 16) {
+    const noise = Math.sin(i * 0.001) * 2 + Math.cos(i * 0.0007) * 1.5;
+    data[i] += noise;
+    data[i+1] += noise * 0.8;
+    data[i+2] += noise * 0.6;
+  }
+  ctx.putImageData(imageData, 0, 0);
+
+  return canvas.toDataURL();
+}
+
+// Set vinyl texture on load
+const VINYL_SIZE = 800;
+const vinylTexture = generateVinylTexture(VINYL_SIZE);
+vinylDisc.style.backgroundImage = `url('${vinylTexture}')`;
+vinylDisc.style.backgroundSize = 'cover';
+
+// =========================================================================
+// Playlist Dots
+// =========================================================================
+function renderPlaylistDots() {
+  playlistIndicator.innerHTML = '';
+  PLAYLIST.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'playlist-dot' + (i === currentIndex ? ' active' : '');
+    dot.addEventListener('click', () => {
+      if (i !== currentIndex && !isTransitioning) {
+        switchToTrack(i);
+      }
+    });
+    dot.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      if (i !== currentIndex && !isTransitioning) {
+        switchToTrack(i);
+      }
+    });
+    playlistIndicator.appendChild(dot);
+  });
+}
+
+function updatePlaylistDots() {
+  const dots = playlistIndicator.querySelectorAll('.playlist-dot');
+  dots.forEach((dot, i) => {
+    dot.classList.toggle('active', i === currentIndex);
+  });
+}
+
+// =========================================================================
+// Time Formatting
+// =========================================================================
+function formatTime(seconds) {
+  if (isNaN(seconds) || seconds === Infinity) return '0:00';
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+// =========================================================================
+// Load Track
+// =========================================================================
+function loadTrack(index, skipTransition) {
+  const track = PLAYLIST[index];
+  audio.src = track.file;
+  trackTitle.textContent = track.title;
+  trackArtist.textContent = track.artist;
+  trackNumber.textContent = `${(index + 1).toString().padStart(2, '0')} / ${PLAYLIST.length.toString().padStart(2, '0')}`;
+  updatePlaylistDots();
+
+  // Reset progress
+  progressFill.style.width = '0%';
+  currentTimeEl.textContent = '0:00';
+  totalTimeEl.textContent = '0:00';
+
+  // Load cover
+  if (skipTransition) {
+    albumCover.src = track.cover;
+    albumCover.style.opacity = '1';
+  } else {
+    albumCover.style.opacity = '0';
+    const newImg = new Image();
+    newImg.onload = () => {
+      albumCover.src = track.cover;
+      albumCover.style.opacity = '1';
+    };
+    newImg.onerror = () => {
+      albumCover.src = track.cover;
+      albumCover.style.opacity = '1';
+    };
+    newImg.src = track.cover;
+  }
+
+  // Reload audio
+  audio.load();
+}
+
+// =========================================================================
+// Switch Track (with crossfade transition)
+// =========================================================================
+function switchToTrack(index, direction) {
+  if (isTransitioning) return;
+  if (index < 0 || index >= PLAYLIST.length) return;
+  if (index === currentIndex && audio.src) return;
+
+  isTransitioning = true;
+  const wasPlaying_live = isPlaying;
+
+  // Fade out overlay
+  transitionOverlay.classList.add('active');
+
+  setTimeout(() => {
+    // Pause current audio
+    audio.pause();
+
+    // Update index
+    currentIndex = index;
+
+    // Load new track (handles cover transition internally)
+    loadTrack(currentIndex);
+
+    // Fade out overlay
+    setTimeout(() => {
+      transitionOverlay.classList.remove('active');
+
+      setTimeout(() => {
+        isTransitioning = false;
+
+        // Resume playing if it was playing before
+        if (wasPlaying_live) {
+          play();
+        } else {
+          updateUIState();
+        }
+      }, 300);
+    }, 150);
+  }, 250);
+}
+
+// =========================================================================
+// Play / Pause
+// =========================================================================
+function play() {
+  const playPromise = audio.play();
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      isPlaying = true;
+      vinylDisc.classList.add('playing');
+      tonearm.classList.add('playing');
+      playBtn.classList.add('playing');
+      statusDot.classList.remove('paused');
+      statusText.textContent = '播放中';
+      scrollHint.style.transition = 'opacity 0.8s ease';
+      scrollHint.style.opacity = '0';
+    }).catch(err => {
+      console.warn('Playback requires user interaction:', err);
+      isPlaying = false;
+      updateUIState();
+    });
+  }
+}
+
+function pause() {
+  isPlaying = false;
+  audio.pause();
+  vinylDisc.classList.remove('playing');
+  tonearm.classList.remove('playing');
+  playBtn.classList.remove('playing');
+  statusDot.classList.add('paused');
+  statusText.textContent = '已暂停';
+}
+
+function togglePlay() {
+  if (isPlaying) {
+    pause();
+  } else {
+    play();
+  }
+}
+
+function updateUIState() {
+  if (isPlaying) {
+    vinylDisc.classList.add('playing');
+    tonearm.classList.add('playing');
+    playBtn.classList.add('playing');
+    statusDot.classList.remove('paused');
+    statusText.textContent = '播放中';
+  } else {
+    vinylDisc.classList.remove('playing');
+    tonearm.classList.remove('playing');
+    playBtn.classList.remove('playing');
+    statusDot.classList.add('paused');
+    statusText.textContent = '已暂停';
+    scrollHint.style.opacity = '0.5';
+  }
+}
+
+// =========================================================================
+// Next / Previous
+// =========================================================================
+function nextTrack() {
+  const next = (currentIndex + 1) % PLAYLIST.length;
+  switchToTrack(next, 1);
+}
+
+function prevTrack() {
+  // If more than 3 seconds in, restart current track
+  if (audio.currentTime > 3) {
+    audio.currentTime = 0;
+    progressFill.style.width = '0%';
+    currentTimeEl.textContent = '0:00';
+    return;
+  }
+  const prev = (currentIndex - 1 + PLAYLIST.length) % PLAYLIST.length;
+  switchToTrack(prev, -1);
+}
+
+// =========================================================================
+// Audio Event Handlers
+// =========================================================================
+audio.addEventListener('loadedmetadata', () => {
+  totalTimeEl.textContent = formatTime(audio.duration);
+});
+
+audio.addEventListener('timeupdate', () => {
+  if (audio.duration) {
+    const progress = (audio.currentTime / audio.duration) * 100;
+    progressFill.style.width = `${progress}%`;
+    currentTimeEl.textContent = formatTime(audio.currentTime);
+  }
+});
+
+audio.addEventListener('ended', () => {
+  nextTrack();
+});
+
+audio.addEventListener('error', (e) => {
+  console.error('Audio error:', e);
+  statusText.textContent = '加载失败';
+});
+
+// =========================================================================
+// Progress Bar Click/Seek
+// =========================================================================
+const progressBar = document.getElementById('progressBar');
+let isDragging = false;
+
+progressBar.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  seekFromEvent(e);
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (isDragging) seekFromEvent(e);
+});
+
+document.addEventListener('mouseup', () => {
+  isDragging = false;
+});
+
+progressBar.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  seekFromEvent(e.touches[0]);
+});
+
+document.addEventListener('touchmove', (e) => {
+  if (isDragging) seekFromEvent(e.touches[0]);
+});
+
+document.addEventListener('touchend', () => {
+  isDragging = false;
+});
+
+function seekFromEvent(e) {
+  if (!audio.duration) return;
+  const rect = progressBar.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width;
+  const clampedX = Math.max(0, Math.min(1, x));
+  audio.currentTime = clampedX * audio.duration;
+  progressFill.style.width = `${clampedX * 100}%`;
+}
+
+// =========================================================================
+// Scroll Wheel → Track Switching
+// =========================================================================
+document.addEventListener('wheel', (e) => {
+  e.preventDefault();
+
+  const now = Date.now();
+  if (now - lastScrollTime < 800) return;
+  if (isTransitioning) return;
+
+  lastScrollTime = now;
+
+  if (e.deltaY > 0) {
+    nextTrack();
+  } else {
+    prevTrack();
+  }
+}, { passive: false });
+
+// =========================================================================
+// Touch Swipe → Track Switching (Mobile)
+// =========================================================================
+document.addEventListener('touchstart', (e) => {
+  touchStartY = e.touches[0].clientY;
+  touchStartX = e.touches[0].clientX;
+}, { passive: true });
+
+document.addEventListener('touchend', (e) => {
+  if (isTransitioning) return;
+
+  const touchEndY = e.changedTouches[0].clientY;
+  const touchEndX = e.changedTouches[0].clientX;
+  const deltaY = touchStartY - touchEndY;
+  const deltaX = touchStartX - touchEndX;
+
+  // Swipe threshold: 50px
+  if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 50) {
+    if (deltaY > 0) {
+      nextTrack();
+    } else {
+      prevTrack();
+    }
+  }
+}, { passive: true });
+
+// =========================================================================
+// Keyboard Controls
+// =========================================================================
+document.addEventListener('keydown', (e) => {
+  switch (e.code) {
+    case 'Space':
+      e.preventDefault();
+      togglePlay();
+      break;
+    case 'ArrowRight':
+    case 'ArrowDown':
+      e.preventDefault();
+      nextTrack();
+      break;
+    case 'ArrowLeft':
+    case 'ArrowUp':
+      e.preventDefault();
+      prevTrack();
+      break;
+  }
+});
+
+// =========================================================================
+// Volume Control (via arrow keys with Shift)
+// =========================================================================
+document.addEventListener('keydown', (e) => {
+  if (e.shiftKey) {
+    switch (e.code) {
+      case 'ArrowUp':
+        e.preventDefault();
+        audio.volume = Math.min(1, audio.volume + 0.1);
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        audio.volume = Math.max(0, audio.volume - 0.1);
+        break;
+    }
+  }
+});
+
+// =========================================================================
+// Button Event Listeners
+// =========================================================================
+playBtn.addEventListener('click', togglePlay);
+document.getElementById('nextBtn').addEventListener('click', nextTrack);
+document.getElementById('prevBtn').addEventListener('click', prevTrack);
+
+// =========================================================================
+// Album cover transition
+// =========================================================================
+albumCover.addEventListener('load', () => {
+  albumCover.style.transition = 'opacity 0.4s ease';
+  albumCover.style.opacity = '1';
+});
+albumCover.style.opacity = '1';
+
+// =========================================================================
+// Cover Image Error Fallback
+// =========================================================================
+albumCover.addEventListener('error', () => {
+  // Create a gradient fallback
+  albumCover.style.objectFit = 'none';
+  albumCover.style.background = `linear-gradient(135deg, #1a2332, #2d4a7a)`;
+});
+
+// =========================================================================
+// Init
+// =========================================================================
+function init() {
+  renderPlaylistDots();
+  loadTrack(0, true);
+
+  // Preload next tracks
+  for (let i = 1; i < PLAYLIST.length; i++) {
+    const img = new Image();
+    img.src = PLAYLIST[i].cover;
+  }
+
+  // Hide scroll hint after first interaction
+  const hideHint = () => {
+    scrollHint.style.transition = 'opacity 0.8s ease';
+    scrollHint.style.opacity = '0';
+  };
+  document.addEventListener('click', hideHint, { once: true });
+  document.addEventListener('touchstart', hideHint, { once: true });
+  document.addEventListener('wheel', hideHint, { once: true });
+
+  console.log(`✦ 我的音乐 — ${PLAYLIST.length} 首歌曲已加载`);
+}
+
+// Start
+init();
+</script>
+
+</body>
+</html>
