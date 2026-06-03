@@ -134,31 +134,19 @@ canvas#bg-ink{
 .vinyl-disc{
   position:absolute;inset:0;border-radius:50%;overflow:hidden;
   background-color:#080808;
-  animation:spin 2.4s linear infinite;animation-play-state:paused;
+  animation:spin 8s linear infinite;animation-play-state:paused;
+  background-size:cover !important;
+  background-position:center !important;
 }
 .vinyl-disc.playing{animation-play-state:running}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 
 .album-art{
-  position:absolute;top:50%;left:50%;
-  width:35%;height:35%;
-  transform:translate(-50%,-50%);
-  border-radius:50%;overflow:hidden;
+  position:absolute;inset:0;border-radius:50%;overflow:hidden;
   background:var(--ink-tint);
-  box-shadow:inset 0 0 50px rgba(0,0,0,0.7),0 0 30px rgba(0,0,0,0.4);
-  border:1px solid rgba(var(--paper-rgb),0.04);
 }
 .album-art img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity 0.5s ease}
-.album-art::before{content:'';position:absolute;z-index:1;top:-3px;left:-3px;right:-3px;bottom:-3px;border-radius:50%;border:1px solid rgba(var(--paper-rgb),0.02);pointer-events:none}
-.album-art::after{content:'';position:absolute;z-index:1;top:50%;left:50%;width:calc(100% + 10px);height:calc(100% + 10px);transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(0,0,0,0.35);pointer-events:none}
-
-.spindle{
-  position:absolute;top:50%;left:50%;width:5%;height:5%;
-  transform:translate(-50%,-50%);border-radius:50%;z-index:3;
-  background:radial-gradient(circle at 35% 35%, #777, #222);
-  box-shadow:inset 0 2px 6px rgba(0,0,0,0.7);
-}
-.spindle::after{content:'';position:absolute;top:50%;left:50%;width:30%;height:30%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 60% 60%, #333, #080808)}
+.album-art::after{content:'';position:absolute;z-index:1;inset:0;border-radius:50%;box-shadow:inset 0 0 40px rgba(0,0,0,0.35);pointer-events:none}
 
 .vinyl-sheen{
   position:absolute;inset:0;border-radius:50%;z-index:2;pointer-events:none;
@@ -349,7 +337,6 @@ canvas#bg-ink{
     <div class="vinyl">
       <div class="vinyl-disc" id="vDisc">
         <div class="album-art"><img id="aCover" src="1.jpg" alt=""></div>
-        <div class="spindle"></div>
       </div>
       <div class="vinyl-sheen"></div>
       <div class="vinyl-edge"></div>
@@ -456,24 +443,10 @@ const au=document.getElementById('audio'),vd=document.getElementById('vDisc'),ta
   st=document.getElementById('stTxt'),to=document.getElementById('to');
 
 // =====================================================================
-// Vinyl Texture
+// Vinyl — uses album cover as disc surface
 // =====================================================================
-(function(){
-  const sz=800,c=document.createElement('canvas');c.width=c.height=sz;const x=c.getContext('2d'),cx=cy=sz/2,R=sz/2;
-  const bg=x.createRadialGradient(cx,cy,0,cx,cy,R);
-  bg.addColorStop(0,'#222');bg.addColorStop(.08,'#181818');bg.addColorStop(.18,'#111');bg.addColorStop(.3,'#0d0d0d');bg.addColorStop(.5,'#0a0a0a');bg.addColorStop(.8,'#070707');bg.addColorStop(1,'#040404');
-  x.fillStyle=bg;x.beginPath();x.arc(cx,cy,R,0,Math.PI*2);x.fill();
-  const iR=R*.19,oR=R*.96;
-  for(let r=oR;r>iR;){x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);const d=(oR-r)/(oR-iR);const sp=.5+d*.6;const br=.006+(1-d)*.03;x.strokeStyle=`rgba(0,0,0,${Math.min(br,.035)})`;x.lineWidth=.3+(1-d)*.15;x.stroke();r-=sp;}
-  [.88,.76,.58,.38].forEach(b=>{for(let r=R*(b+.03);r>R*b;r-=.35){x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.strokeStyle='rgba(0,0,0,.02)';x.lineWidth=.18;x.stroke()}});
-  const hg=x.createRadialGradient(cx*.3,cy*.3,0,cx,cy,R);
-  hg.addColorStop(0,'rgba(241,239,234,0)');hg.addColorStop(.4,'rgba(241,239,234,0)');hg.addColorStop(.6,'rgba(241,239,234,.004)');hg.addColorStop(.8,'rgba(241,239,234,.006)');hg.addColorStop(1,'rgba(241,239,234,0)');
-  x.fillStyle=hg;x.beginPath();x.arc(cx,cy,R,0,Math.PI*2);x.fill();
-  const id=x.getImageData(0,0,sz,sz);const d=id.data;
-  for(let i=0;i<d.length;i+=8){const n=Math.sin(i*.0017)*1.2+Math.cos(i*.0013)*1+Math.sin(i*.0021)*.6;d[i]+=n;d[i+1]+=n*.7;d[i+2]+=n*.5}
-  x.putImageData(id,0,0);
-  vd.style.backgroundImage=`url('${c.toDataURL()}')`;vd.style.backgroundSize='cover';vd.style.animationDuration='2.4s';
-})();
+vd.style.backgroundSize='cover';
+vd.style.backgroundPosition='center';
 
 // =====================================================================
 // Functions
@@ -482,7 +455,7 @@ const pds=document.getElementById('pDots');
 function rD(){pds.innerHTML='';PL.forEach((_,i)=>{const d=document.createElement('div');d.className='pdot'+(i===ci?' active':'');d.onclick=()=>{if(i!==ci&&!it)sw(i)};pds.appendChild(d)})}
 function uD(){pds.querySelectorAll('.pdot').forEach((d,i)=>d.classList.toggle('active',i===ci))}
 function fm(s){if(isNaN(s)||s===Infinity)return'0:00';return Math.floor(s/60)+':'+(Math.floor(s%60)+'').padStart(2,'0')}
-function ld(i,sk){const t=PL[i];au.src=t.f;tt.textContent=t.t;ta2.textContent=t.a;tn.textContent=(i+1+'').padStart(2,'0')+' / '+(PL.length+'').padStart(2,'0');uD();pf.style.width='0%';ct.textContent='0:00';tt2.textContent='0:00';if(sk){ac.src=t.c;ac.style.opacity='1'}else{ac.style.opacity='0';const img=new Image();img.onload=()=>{ac.src=t.c;ac.style.opacity='1'};img.onerror=()=>{ac.src=t.c;ac.style.opacity='1'};img.src=t.c}au.load()}
+function ld(i,sk){const t=PL[i];au.src=t.f;tt.textContent=t.t;ta2.textContent=t.a;tn.textContent=(i+1+'').padStart(2,'0')+' / '+(PL.length+'').padStart(2,'0');uD();pf.style.width='0%';ct.textContent='0:00';tt2.textContent='0:00';const setImg=(src)=>{ac.src=src;ac.style.opacity='1';vd.style.backgroundImage='url('+src+')';vd.style.backgroundSize='cover';vd.style.backgroundPosition='center'};if(sk){setImg(t.c)}else{ac.style.opacity='0';const img=new Image();img.onload=()=>setImg(t.c);img.onerror=()=>setImg(t.c);img.src=t.c}au.load()}
 function sw(i){if(it||i<0||i>=PL.length||i===ci&&au.src)return;it=true;const wp=ip;to.classList.add('active');setTimeout(()=>{au.pause();ci=i;ld(ci);setTimeout(()=>{to.classList.remove('active');setTimeout(()=>{it=false;wp?pl():ui()},300)},150)},250)}
 function pl(){const p=au.play();if(p!==undefined)p.then(()=>{ip=true;vd.classList.add('playing');ta.classList.add('playing');pb.classList.add('playing');sd.classList.remove('paused');st.textContent='PLAYING'}).catch(()=>{ip=false;ui()})}
 function pa(){ip=false;au.pause();vd.classList.remove('playing');ta.classList.remove('playing');pb.classList.remove('playing');sd.classList.add('paused');st.textContent='PAUSED'}
